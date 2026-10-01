@@ -5,7 +5,7 @@ from flask_app.models.autor import Autores
 
 @app.route("/autores")
 def autores():
-    autores = Autores.autores_lista
+    autores = Autores.autores_lista() # CORRECCIÓN: Se agregaron los paréntesis para ejecutar el método de la clase.
     return render_template(
         'autores.html',
         autores=autores
@@ -29,10 +29,10 @@ def eliminar_autor(id):
     if puede:
         Autores.eliminar(id)
         flash("Autor eliminado correctamente!!", "success")
-        return url_for('autores')
+        return redirect(url_for('autores'))
     
     flash("Ups, parece que algo salio mal", "danger")
-    return url_for('autores')
+    return redirect(url_for('autores'))
 
 @app.route("/autores/ingresar", methods=["POST"])
 def nuevo_autor():
@@ -48,7 +48,7 @@ def nuevo_autor():
         "apellido" : apellido
     }
     
-    puede = Autores.validar_autor(datos)
+    puede = Autores.validar_autor(datos) # CORRECCIÓN: Se agregaron los paréntesis a la validación.
     if not puede:
         return url_for('autores')
     
@@ -71,6 +71,7 @@ def modificar_autor(id):
     apellido = request.form.get("apellido", " ").strip()
         
     datos = {
+        "id_autor" : id, # CORRECCIÓN: Se añadió el id del autor para que sepa a qué registro aplicar el cambio.
         "nombre" : nombre,
         "apellido" : apellido
     }
@@ -79,6 +80,6 @@ def modificar_autor(id):
     if not puede:
         return url_for('autores')
     
-    Autores.guardar(datos)
+    Autores.modificar(datos)
     flash("Autor modificado correctamente!!")
     return url_for('autores')

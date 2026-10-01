@@ -94,7 +94,6 @@ class Autores:
         
         return connectToMySQL("esquema_biblioteca").query_db(query, data)
     
-    # Busca por nombre clompleto para evitar repetición
     @classmethod
     def buscar_nombre_completo(cls, nombre, apellido):
         query = """

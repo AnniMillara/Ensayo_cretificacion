@@ -3,12 +3,10 @@ from flask_app import app, bcrypt
 from flask_app.models.usuario import Usuarios
 from flask_app.models.favorito import Favoritos
 
-# Inicio con registro / login
 @app.route("/")
 def inicio():
-    return redirect(url_for('login.html'))
+    return render_template('login.html') # CORRECCIÓN: Se cambió el redirect erróneo por render_template para mostrar la vista de inicio/login correctamente.
 
-# Registro de nuevo usuario
 @app.route("/registro", methods=["POST"])
 def registro():
     nombre = request.form.get("nombre", "").strip()
@@ -41,9 +39,8 @@ def registro():
     session["id_usuario"] = nuevo_id
 
     flash("Usuario creado correctamente.", "success")
-    return redirect(url_for("perfil"))
+    return redirect(url_for("ruta_perfil", id=nuevo_id)) # CORRECCIÓN: Se le pasó el parámetro 'id' para evitar errores de ruta en Flask.
 
-# Ingresar
 @app.route("/login", methods=["POST"])
 def login():
     email = request.form.get("email", "").strip()
@@ -65,9 +62,8 @@ def login():
 
     session["id_usuario"] = usuario.id_usuario
     flash("Bienvenido de vuelta!!", "success")
-    return redirect(url_for("perfil"))
+    return redirect(url_for("ruta_perfil", id=usuario.id_usuario)) # CORRECCIÓN: Se añadió el 'id' correspondiente del usuario logueado.
 
-# Ruta perfil de usuario
 @app.route("/perfil/<int:id>")
 def ruta_perfil(id):
     usuario = Usuarios.buscar_id(id)
@@ -79,42 +75,31 @@ def ruta_perfil(id):
         favoritos=favs
     )
 
-# Ruta que muestra la página de confirmación antes de borrar la cuenta.
 @app.route("/perfil/confirmar_eliminar/<int:id>")
 def confirmar_eliminar(id):
-    # Verifica que haya sesión activa y que el id de la URL sea el mismo
-    # del usuario logueado.
     if "id_usuario" not in session or session["id_usuario"] != id:
         flash("No puedes eliminar este perfil.", "danger")
         return redirect(url_for("inicio"))
     
-    # Trae los datos del usuario para mostrarlos en la vista
     usuario = Usuarios.buscar_id(id)
     if not usuario:
-        # Si el id no existe en la BD, no tiene sentido seguir.
         flash("Usuario no encontrado.", "danger")
         return redirect(url_for("inicio"))
     
-    # Muestra la plantilla con los botones "Sí, eliminar" y "Cancelar".
-    # El borrado real recién ocurre si el usuario hace clic en el primero.
     return render_template(
         "confirmar_eliminar.html",
         mensaje=f"Vas a eliminar tu perfil, {usuario.nombre}. Esta acción no se puede deshacer.",
         accion=url_for("eliminar_usuario", id=usuario.id_usuario),
-        cancelar=url_for("perfil")
+        cancelar=url_for("ruta_perfil", id=usuario.id_usuario) # CORRECCIÓN: Se agregó el id requerido por la ruta del perfil.
     )
 
-# Ruta que ejecuta el borrado real.
 @app.route("/perfil/eliminar/<int:id>")
 def eliminar_usuario(id):
-    # Misma validación de seguridad.
     if "id_usuario" not in session or session["id_usuario"] != id:
         flash("No puedes eliminar este perfil.", "danger")
         return redirect(url_for("inicio"))
     
-    # Borra el registro de la base de datos.
     Usuarios.eliminar(id)
-    # Limpia la sesión para que el usuario quede desconectado.
     session.clear()
     flash("Perfil eliminado correctamente.", "success")
     return redirect(url_for("inicio"))

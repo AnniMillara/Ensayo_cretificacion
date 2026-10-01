@@ -8,18 +8,12 @@ class Libros:
         self.autor_id = data["autor_id"]
         self.genero_id = data["genero_id"]
         self.descripcion = data["descripcion"]
-        # CORRECCIÓN: se agrega usuario_id porque la tabla libros ahora tiene
-        # esa columna con FK a usuarios. Sin este atributo no se puede saber
-        # quién creó cada libro y no se puede aplicar la regla de "un usuario
-        # no puede modificar ni eliminar registros que no le pertenecen".
         self.usuario_id = data["usuario_id"]
         self.created_at = data["created_at"]
         self.updated_at = data["updated_at"]
     
     @classmethod
     def ver_libros(cls):
-        # CORRECCIÓN: se agrega usuario_id al SELECT. Si no se selecciona,
-        # el __init__ lanza KeyError al intentar leer data["usuario_id"].
         query = """
             SELECT 
                 id_libro,
@@ -44,9 +38,6 @@ class Libros:
     
     @classmethod
     def buscar_id(cls, id):
-        # CORRECCIÓN: usuario_id agregado al SELECT por la misma razón
-        # que en ver_libros. Se usa en el controlador para comparar con
-        # session["id_usuario"] antes de permitir editar o eliminar.
         query = """
             SELECT 
                 id_libro,
@@ -71,8 +62,6 @@ class Libros:
     
     @classmethod
     def modificar(cls, data):
-        # usuario_id NO se actualiza en modificar porque el dueño del libro
-        # no cambia: el libro sigue perteneciendo al mismo usuario que lo creó.
         query = """
             UPDATE libros
             SET
@@ -92,10 +81,6 @@ class Libros:
             DELETE FROM libros
             WHERE id_libro = %(id_libro)s;
         """
-    
-        # CORRECCIÓN: se arregla la indentación del diccionario.
-        # Estaba mal alineado y aunque Python lo acepta, rompe la
-        # consistencia visual del resto del archivo.
         data = {
             "id_libro" : id
         }
@@ -103,9 +88,6 @@ class Libros:
     
     @classmethod
     def guardar(cls, data):
-        # CORRECCIÓN: se agrega usuario_id al INSERT para que cada libro
-        # quede asociado al usuario que lo creó. El valor viene del
-        # controlador usando session["id_usuario"].
         query = """
             INSERT INTO libros(
                 titulo,
@@ -130,7 +112,6 @@ class Libros:
     
     @classmethod
     def buscar_autor(cls, autor):
-        # CORRECCIÓN: usuario_id agregado al SELECT para que __init__ no falle.
         query = """
             SELECT 
                 id_libro,
@@ -153,19 +134,12 @@ class Libros:
         if resultados:
             for libro in resultados:
                 libros.append(cls(libro))
-            
-            # CORRECCIÓN CRÍTICA: antes retornaba None aunque hubiera resultados.
-            # El error estaba en que se llenaba la lista pero se devolvía None
-            # al final, por lo que el controlador siempre recibía None.
-            # Ahora retorna la lista completa de libros, vacía si no hay resultados.
             return libros
         
         return None
 
     @classmethod
     def buscar_genero(cls, genero):
-        # CORRECCIÓN: usuario_id agregado al SELECT por la misma razón
-        # que en los otros métodos de búsqueda.
         query = """
             SELECT 
                 id_libro,
@@ -194,7 +168,6 @@ class Libros:
     def validar_libro(datos):
         es_valido = True
 
-        # Título: obligatorio y mínimo 2 caracteres.
         if not datos["titulo"].strip():
             flash("El título es obligatorio.", "danger")
             es_valido = False
@@ -202,7 +175,6 @@ class Libros:
             flash("El título debe tener al menos 2 caracteres.", "danger")
             es_valido = False
 
-        # Descripción: obligatoria y mínimo 10 caracteres.
         if not datos["descripcion"].strip():
             flash("La descripción es obligatoria.", "danger")
             es_valido = False
@@ -210,12 +182,10 @@ class Libros:
             flash("La descripción debe tener al menos 10 caracteres.", "danger")
             es_valido = False
 
-        # Autor: debe venir un id válido del <select>.
         if not datos["autor_id"]:
             flash("Debes seleccionar un autor.", "danger")
             es_valido = False
 
-        # Género: debe venir un id válido del <select>.
         if not datos["genero_id"]:
             flash("Debes seleccionar un género.", "danger")
             es_valido = False

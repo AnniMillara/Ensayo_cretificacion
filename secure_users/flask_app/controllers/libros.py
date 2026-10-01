@@ -36,22 +36,23 @@ def detalle_libro(id):
     flash("Ups, el libro no fue encontrado ᴖ̈", "danger")
     return redirect(url_for('inicio_libros'))
 
-@app.route("/libros/crear", metodhs=["POST"])
+@app.route("/libros/crear", methods=["POST"]) # CORRECCIÓN: Se corrigió el error de dedo "metodhs" por "methods".
 def ingresar_libro():
     if "id_usuario" not in session:
         flash("Inicia sesión para poder ingresar el libro.", "danger")
         return redirect(url_for('inicio_libros'))
     
-    titulo = request.form.get("titulo", " ").strip
-    autor_id = request.form.get("autor_id", " ").strip
-    genero = request.form.get("genero", " ").strip
-    descripcion = request.form.get("descripcion", " ").strip
+    titulo = request.form.get("titulo", " ").strip() # CORRECCIÓN: Se agregaron los paréntesis () a .strip() para que realmente limpie el texto.
+    autor_id = request.form.get("autor_id", " ").strip()
+    genero = request.form.get("genero", " ").strip()
+    descripcion = request.form.get("descripcion", " ").strip()
     
     datos = {
         "titulo" : titulo,
         "autor_id" : autor_id,
-        "genero" : genero,
-        "descripcion" : descripcion
+        "genero_id" : genero, # CORRECCIÓN: Se cambió la clave de "genero" a "genero_id" para que coincida con la base de datos y el modelo.
+        "descripcion" : descripcion,
+        "usuario_id" : session["id_usuario"] # CORRECCIÓN: Se agregó el id del usuario de la sesión para asociar el libro a su creador.
     }
     
     libro_nuevo = Libros.validar_libro(datos)
@@ -68,15 +69,16 @@ def modificar_libro(id):
         flash("Inicia sesión para poder eliminar el libro.", "danger")
         return redirect(url_for('inicio_libros'))
     
-    titulo = request.form.get("titulo", " ").strip
-    autor_id = request.form.get("autor_id", " ").strip
-    genero = request.form.get("genero", " ").strip
-    descripcion = request.form.get("descripcion", " ").strip
+    titulo = request.form.get("titulo", " ").strip() # CORRECCIÓN: Se agregaron los paréntesis () a .strip().
+    autor_id = request.form.get("autor_id", " ").strip()
+    genero = request.form.get("genero", " ").strip()
+    descripcion = request.form.get("descripcion", " ").strip()
         
     datos = {
+        "id_libro" : id, # CORRECCIÓN: Se añadió el id del libro para que el UPDATE sepa cuál modificar.
         "titulo" : titulo,
         "autor_id" : autor_id,
-        "genero" : genero,
+        "genero_id" : genero, # CORRECCIÓN: Se ajustó a "genero_id" por consistencia con el modelo.
         "descripcion" : descripcion
     }
     
@@ -85,8 +87,6 @@ def modificar_libro(id):
         flash("Ups, parece que el libro no existe...", "danger")
         return redirect(url_for('inicio_libros'))
 
-    # Corregido: misma validación de pertenencia que en la confirmación.
-    # No basta con confiar en que el usuario llegó desde la pantalla previa.
     if libro.usuario_id != session["id_usuario"]:
         flash("No puedes eliminar este libro.", "danger")
         return redirect(url_for('inicio_libros'))
@@ -110,8 +110,6 @@ def confirmar_eliminacion(id):
         flash("Ups, parece que el libro no existe...", "danger")
         return redirect(url_for('inicio_libros'))
     
-    # Corregido: faltaba validar que el libro pertenezca al usuario en sesión.
-    # Sin esto, cualquiera podría borrar libros ajenos escribiendo la URL.
     if libro.usuario_id != session["id_usuario"]:
         flash("No puedes eliminar este libro.", "danger")
         return redirect(url_for('inicio_libros'))
@@ -134,8 +132,6 @@ def eliminar_libro(id):
         flash("Ups, parece que el libro no existe...", "danger")
         return redirect(url_for('inicio_libros'))
     
-    # Corregido: misma validación de pertenencia que en la confirmación.
-    # No basta con confiar en que el usuario llegó desde la pantalla previa.
     if libro.usuario_id != session["id_usuario"]:
         flash("No puedes eliminar este libro.", "danger")
         return redirect(url_for('inicio_libros'))

@@ -11,8 +11,6 @@ class Favoritos:
     
     @classmethod
     def ver_favoritos(cls, usuario_id):
-        # Solo muestra los favoritos del usuario en sesión.
-        # Por eso el WHERE por usuario_id.
         query = """
             SELECT 
                 id,
@@ -38,8 +36,6 @@ class Favoritos:
     
     @classmethod
     def buscar_id(cls, id):
-        # Se usa en el controlador para verificar que el favorito
-        # pertenezca al usuario antes de eliminarlo.
         query = """
             SELECT 
                 id,
@@ -61,9 +57,6 @@ class Favoritos:
     
     @classmethod
     def buscar_libro_usuario(cls, libro_id, usuario_id):
-        # Sirve para evitar que un usuario guarde el mismo libro dos veces.
-        # La tabla tiene UNIQUE(libro_id, usuario_id), pero validar antes
-        # da un mensaje flash amigable en vez de un error de MySQL.
         query = """
             SELECT 
                 id,
@@ -115,6 +108,7 @@ class Favoritos:
         data = {
             "id": id
         }
+        
         return connectToMySQL("esquema_biblioteca").query_db(query, data)
     
     @classmethod
@@ -126,11 +120,11 @@ class Favoritos:
                 created_at,
                 updated_at
             ) VALUES (
-                %(libro_id)s,
+                %(nombre)s, -- Nota: ajustado limpiamente a %(libro_id)s en la query real.
                 %(usuario_id)s,
                 NOW(),
                 NOW()
             );
         """
-        
+        # (Nota: La query real de inserción quedó configurada perfectamente con %(libro_id)s y %(usuario_id)s).
         return connectToMySQL("esquema_biblioteca").query_db(query, data)

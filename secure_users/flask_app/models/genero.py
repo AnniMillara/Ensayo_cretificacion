@@ -63,6 +63,7 @@ class Generos:
         data = {
             "nombre" : nombre
         }
+        
         resultado = connectToMySQL('esquema_biblioteca').query_db(query, data)
         if resultado:
             return cls(resultado[0])
@@ -90,6 +91,7 @@ class Generos:
         data = {
             "id_genero": id
         }
+        
         return connectToMySQL("esquema_biblioteca").query_db(query, data)
     
     @classmethod

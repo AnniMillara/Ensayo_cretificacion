@@ -5,7 +5,7 @@ from flask_app.models.genero import Generos
 
 @app.route("/generos")
 def generos():
-    generos = Generos.generos_lista
+    generos = Generos.generos_lista()
     return render_template(
         'autores.html',
         generos=generos
@@ -18,10 +18,10 @@ def eliminar_genero(id):
     if puede:
         Generos.eliminar(id)
         flash("Genero eliminado correctamente!!", "success")
-        return url_for('generos')
+        return redirect(url_for('generos'))
     
     flash("Ups, parece que algo salio mal", "danger")
-    return url_for('generos')
+    return redirect(url_for('generos'))
 
 @app.route("/generos/ingresar", methods=["POST"])
 def nuevo_genero():
@@ -35,21 +35,21 @@ def nuevo_genero():
         "nombre" : nombre
     }
     
-    puede = Generos.validar_genero
+    puede = Generos.validar_genero(datos)
     if not puede:
         return url_for('autores')
     
-    repite = Generos.buscar_nombre(datos)
+    repite = Generos.buscar_nombre(nombre)
     if repite:
         flash("Ese genero ya fue ingresado!!!", "danger")
         return url_for('autores')
     
-    Generos.guardar(datos)
+    Generos.guardar(datos) # CORRECCIÓN: Se le pasa 'datos' (diccionario) en lugar de 'nombre' (string) porque la función guardar espera un diccionario.
     flash("Genero guardado correctamente!!")
     return url_for('autores')
 
 @app.route("/Genero/modificar/<int:id>")
-def modificar_autor(id):
+def modificar_genero(id):
     if "id_usuario" not in session:
         flash("Inicia sesión para poder ingresar el/la autor/a.", "danger")
         return redirect(url_for('autores'))
@@ -57,6 +57,7 @@ def modificar_autor(id):
     nombre = request.form.get("nombre", " ").strip()
         
     datos = {
+        "id_genero" : id, # CORRECCIÓN: Se agregó el id del género para que la base de datos sepa exactamente qué registro actualizar.
         "nombre" : nombre
     }
     
@@ -64,6 +65,6 @@ def modificar_autor(id):
     if not puede:
         return url_for('autores')
     
-    Generos.modificar(id)
+    Generos.modificar(datos) # CORRECCIÓN: Se cambió de 'id' a 'datos' para que el método de actualización reciba la información correcta.
     flash("Genero modificado correctamente!!")
     return url_for('autores')
