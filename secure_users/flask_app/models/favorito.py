@@ -85,6 +85,27 @@ class Favoritos:
         return None
     
     @classmethod
+    def favorito_de(cls, libro_id):
+        query = """
+            SELECT 
+                usuarios.id_usuario,
+                usuarios.nombre,
+                usuarios.apellido,
+                usuarios.email,
+                favoritos.created_at AS fecha_favorito
+            FROM favoritos
+            JOIN usuarios ON favoritos.usuario_id = usuarios.id_usuario
+            WHERE favoritos.libro_id = %(libro_id)s
+            ORDER BY usuarios.nombre;
+        """
+        
+        data = {
+            "libro_id": libro_id
+        }
+        
+        return connectToMySQL('esquema_biblioteca').query_db(query, data)
+    
+    @classmethod
     def eliminar(cls, id):
         query = """
             DELETE FROM favoritos

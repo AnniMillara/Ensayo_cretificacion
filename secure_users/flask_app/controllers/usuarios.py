@@ -99,8 +99,10 @@ def confirmar_eliminar(id):
     # El borrado real recién ocurre si el usuario hace clic en el primero.
     return render_template(
         "confirmar_eliminar.html",
-        usuario=usuario
-        )
+        mensaje=f"Vas a eliminar tu perfil, {usuario.nombre}. Esta acción no se puede deshacer.",
+        accion=url_for("eliminar_usuario", id=usuario.id_usuario),
+        cancelar=url_for("perfil")
+    )
 
 # Ruta que ejecuta el borrado real.
 @app.route("/perfil/eliminar/<int:id>")

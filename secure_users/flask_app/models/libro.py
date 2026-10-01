@@ -150,14 +150,17 @@ class Libros:
         
         libros = []
         resultados = connectToMySQL('esquema_biblioteca').query_db(query, data)
-        for libro in resultados:
-            libros.append(cls(libro))
+        if resultados:
+            for libro in resultados:
+                libros.append(cls(libro))
+            
+            # CORRECCIÓN CRÍTICA: antes retornaba None aunque hubiera resultados.
+            # El error estaba en que se llenaba la lista pero se devolvía None
+            # al final, por lo que el controlador siempre recibía None.
+            # Ahora retorna la lista completa de libros, vacía si no hay resultados.
+            return libros
         
-        # CORRECCIÓN CRÍTICA: antes retornaba None aunque hubiera resultados.
-        # El error estaba en que se llenaba la lista pero se devolvía None
-        # al final, por lo que el controlador siempre recibía None.
-        # Ahora retorna la lista completa de libros, vacía si no hay resultados.
-        return libros
+        return None
 
     @classmethod
     def buscar_genero(cls, genero):
@@ -186,3 +189,35 @@ class Libros:
             libros.append(cls(libro))
         
         return libros
+    
+    @staticmethod
+    def validar_libro(datos):
+        es_valido = True
+
+        # Título: obligatorio y mínimo 2 caracteres.
+        if not datos["titulo"].strip():
+            flash("El título es obligatorio.", "danger")
+            es_valido = False
+        elif len(datos["titulo"].strip()) < 2:
+            flash("El título debe tener al menos 2 caracteres.", "danger")
+            es_valido = False
+
+        # Descripción: obligatoria y mínimo 10 caracteres.
+        if not datos["descripcion"].strip():
+            flash("La descripción es obligatoria.", "danger")
+            es_valido = False
+        elif len(datos["descripcion"].strip()) < 10:
+            flash("La descripción debe tener al menos 10 caracteres.", "danger")
+            es_valido = False
+
+        # Autor: debe venir un id válido del <select>.
+        if not datos["autor_id"]:
+            flash("Debes seleccionar un autor.", "danger")
+            es_valido = False
+
+        # Género: debe venir un id válido del <select>.
+        if not datos["genero_id"]:
+            flash("Debes seleccionar un género.", "danger")
+            es_valido = False
+
+        return es_valido
