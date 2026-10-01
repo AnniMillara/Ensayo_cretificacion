@@ -3,7 +3,7 @@ from flask_app import app, bcrypt
 from flask_app.models.usuario import Usuarios
 from flask_app.models.favorito import Favoritos
 
-# Inicion con registro / login
+# Inicio con registro / login
 @app.route("/")
 def inicio():
     return redirect(url_for('login.html'))
