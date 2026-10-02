@@ -35,6 +35,39 @@ class Favoritos:
         return favoritos
     
     @classmethod
+    def libros_favoritos(cls, usuario_id):
+        # Devuelve objetos Libros (con título) de los favoritos del usuario.
+        # Se necesita JOIN para traer los datos del libro, no solo el id.
+        from flask_app.models.libro import Libros
+        
+        query = """
+            SELECT 
+                libros.id_libro,
+                libros.titulo,
+                libros.autor_id,
+                libros.genero_id,
+                libros.descripcion,
+                libros.usuario_id,
+                libros.created_at,
+                libros.updated_at
+            FROM favoritos
+            JOIN libros ON favoritos.libro_id = libros.id_libro
+            WHERE favoritos.usuario_id = %(usuario_id)s
+            ORDER BY favoritos.id;
+        """
+        
+        data = {
+            "usuario_id": usuario_id
+        }
+        resultados = connectToMySQL('esquema_biblioteca').query_db(query, data)
+        
+        libros = []
+        for libro in resultados:
+            libros.append(Libros(libro))
+        
+        return libros
+    
+    @classmethod
     def buscar_id(cls, id):
         query = """
             SELECT 
@@ -120,11 +153,11 @@ class Favoritos:
                 created_at,
                 updated_at
             ) VALUES (
-                %(nombre)s, -- Nota: ajustado limpiamente a %(libro_id)s en la query real.
+                %(libro_id)s,
                 %(usuario_id)s,
                 NOW(),
                 NOW()
             );
         """
-        # (Nota: La query real de inserción quedó configurada perfectamente con %(libro_id)s y %(usuario_id)s).
+        
         return connectToMySQL("esquema_biblioteca").query_db(query, data)

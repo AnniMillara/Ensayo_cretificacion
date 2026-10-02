@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}BookHub - Autores{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h2>Autores</h2>
+        <p>Gestiona los autores registrados en la plataforma.</p>
+    </div>
+</div>
+
+<!-- Formulario para nuevo autor -->
+<div class="card-bookhub mb-4">
+    <h3 style="margin-top:0; font-size: 1.05rem;">Agregar Autor</h3>
+    <form action="{{ url_for('nuevo_autor') }}" method="POST">
+        <div class="grid-2">
+            <div class="mb-3">
+                <label>Nombre</label>
+                <input type="text" name="nombre" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label>Apellido</label>
+                <input type="text" name="apellido" class="form-control" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-dark">+ Agregar Autor</button>
+    </form>
+</div>
+
+<!-- Listado -->
+<div class="list-grid">
+    {% for autor in autores %}
+    <div class="list-card">
+        <a href="{{ url_for('detalle_autor', id=autor.id_autor) }}" class="name">
+            {{ autor.nombre }} {{ autor.apellido }}
+        </a>
+        <div class="actions">
+            <a href="{{ url_for('detalle_autor', id=autor.id_autor) }}" class="btn btn-sm btn-info">Ver</a>
+            <a href="{{ url_for('eliminar_autor', id=autor.id_autor) }}" class="btn btn-sm btn-danger">Borrar</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

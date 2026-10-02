@@ -5,7 +5,7 @@ from flask_app.models.favorito import Favoritos
 
 @app.route("/")
 def inicio():
-    return render_template('login.html') # CORRECCIÓN: Se cambió el redirect erróneo por render_template para mostrar la vista de inicio/login correctamente.
+    return render_template('login.html')
 
 @app.route("/registro", methods=["POST"])
 def registro():
@@ -36,10 +36,13 @@ def registro():
     }
 
     nuevo_id = Usuarios.guardar(data)
+    if not nuevo_id:
+        flash("No fue posible crear el usuario.", "danger")
+        return redirect(url_for("inicio"))
+    
     session["id_usuario"] = nuevo_id
-
     flash("Usuario creado correctamente.", "success")
-    return redirect(url_for("ruta_perfil", id=nuevo_id)) # CORRECCIÓN: Se le pasó el parámetro 'id' para evitar errores de ruta en Flask.
+    return redirect(url_for("ruta_perfil", id=nuevo_id))
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -51,7 +54,6 @@ def login():
         return redirect(url_for("inicio"))
 
     usuario = Usuarios.buscar_email(email)
-
     if not usuario:
         flash("Email o contraseña incorrectos.", "danger")
         return redirect(url_for("inicio"))
@@ -61,13 +63,24 @@ def login():
         return redirect(url_for("inicio"))
 
     session["id_usuario"] = usuario.id_usuario
-    flash("Bienvenido de vuelta!!", "success")
-    return redirect(url_for("ruta_perfil", id=usuario.id_usuario)) # CORRECCIÓN: Se añadió el 'id' correspondiente del usuario logueado.
+    flash("Bienvenido de vuelta.", "success")
+    return redirect(url_for("ruta_perfil", id=usuario.id_usuario))
 
 @app.route("/perfil/<int:id>")
 def ruta_perfil(id):
+    if "id_usuario" not in session or session["id_usuario"] != id:
+        flash("Debes iniciar sesión para ver esta página.", "danger")
+        return redirect(url_for("inicio"))
+    
     usuario = Usuarios.buscar_id(id)
-    favs = Favoritos.ver_favoritos(id)
+    if not usuario:
+        session.clear()
+        flash("Usuario no encontrado.", "danger")
+        return redirect(url_for("inicio"))
+    
+    # CORRECCIÓN: se usa libros_favoritos porque el template espera objetos
+    # Libros (con id_libro, titulo, etc.), no objetos Favoritos.
+    favs = Favoritos.libros_favoritos(id)
     
     return render_template(
         "perfil.html",
@@ -90,7 +103,7 @@ def confirmar_eliminar(id):
         "confirmar_eliminar.html",
         mensaje=f"Vas a eliminar tu perfil, {usuario.nombre}. Esta acción no se puede deshacer.",
         accion=url_for("eliminar_usuario", id=usuario.id_usuario),
-        cancelar=url_for("ruta_perfil", id=usuario.id_usuario) # CORRECCIÓN: Se agregó el id requerido por la ruta del perfil.
+        cancelar=url_for("ruta_perfil", id=usuario.id_usuario)
     )
 
 @app.route("/perfil/eliminar/<int:id>")
@@ -102,4 +115,10 @@ def eliminar_usuario(id):
     Usuarios.eliminar(id)
     session.clear()
     flash("Perfil eliminado correctamente.", "success")
+    return redirect(url_for("inicio"))
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("Sesión cerrada correctamente.", "success")
     return redirect(url_for("inicio"))

@@ -1,9 +1,59 @@
 {% extends "base.html" %}
 
-{% block title %}
-
-{% endblock  %}
+{% block title %}BookHub - Mi Perfil{% endblock %}
 
 {% block content %}
 
-{% endblock  %}
+<div class="profile-header">
+    <div class="profile-avatar">{{ usuario.nombre[0]|upper }}</div>
+    <div class="profile-info">
+        <h2>{{ usuario.nombre }} {{ usuario.apellido }}</h2>
+        <p>{{ usuario.email }}</p>
+    </div>
+</div>
+
+<div class="page-header">
+    <div>
+        <h2>Mis Favoritos</h2>
+        <p>Libros que has guardado en tu lista personal.</p>
+    </div>
+</div>
+
+{% if favoritos %}
+<table class="table-bookhub">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Fecha</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fav in favoritos %}
+        <tr>
+            <td>
+                <a href="{{ url_for('detalle_libro', id=fav.id_libro) }}">{{ fav.titulo }}</a>
+            </td>
+            <td>{{ fav.created_at.strftime('%Y-%m-%d') }}</td>
+            <td>
+                <a href="{{ url_for('eliminar_favorito', libro_id=fav.id_libro) }}" class="btn btn-sm btn-danger">
+                    Quitar
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card-bookhub text-center">
+    <p class="text-muted">Aún no tienes favoritos guardados.</p>
+</div>
+{% endif %}
+
+<div class="mt-5">
+    <a href="{{ url_for('confirmar_eliminar', id=usuario.id_usuario) }}" class="btn btn-danger">
+        Eliminar mi cuenta
+    </a>
+</div>
+
+{% endblock %}

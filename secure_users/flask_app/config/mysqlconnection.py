@@ -22,12 +22,14 @@ class MySQLConnection:
 
         with connection.cursor() as cursor:
             try:
-                query_debug = cursor.mogrify(query, data)
-                print("Running Query:", query_debug)
+                q = query.strip().lower()
+
+                if data is not None:
+                    print("Running Query:", cursor.mogrify(query, data))
+                else:
+                    print("Running Query:", query)
 
                 cursor.execute(query, data)
-
-                q = query.strip().lower()
 
                 if q.startswith("select"):
                     return cursor.fetchall()
@@ -39,7 +41,7 @@ class MySQLConnection:
 
             except Exception as e:
                 print("Ups, algo ha salido mal :(", e)
-                return False
+                raise
 
             finally:
                 connection.close()

@@ -1,105 +1,138 @@
 from flask import render_template, redirect, request, session, flash, url_for
-from flask_app import app, bcrypt
+from flask_app import app
 from flask_app.models.libro import Libros
+from flask_app.models.autor import Autores
+from flask_app.models.genero import Generos
 from flask_app.models.favorito import Favoritos
+from flask_app.models.usuario import Usuarios
 
 @app.route("/libros")
 def inicio_libros():
+    if "id_usuario" not in session:
+        flash("Debes iniciar sesión.", "danger")
+        return redirect(url_for("inicio"))
+    
     libros = Libros.ver_libros()
-    return render_template(
-            'libros.html',
-            libros=libros
-        )
-
-@app.route("/libros/<int:id>")
-def libros(id):
-    mis_libros = Favoritos.ver_favoritos(id)
-    libros = Libros.ver_libros()
+    libros_favs = Favoritos.libros_favoritos(session["id_usuario"])
     return render_template(
         'libros.html',
-        mis_libros=mis_libros,
-        libros=libros
+        libros=libros,
+        libros_favs=libros_favs
     )
 
 @app.route("/libro/detalle/<int:id>")
 def detalle_libro(id):
+    if "id_usuario" not in session:
+        flash("Debes iniciar sesión.", "danger")
+        return redirect(url_for("inicio"))
+    
     libro = Libros.buscar_id(id)
+    if not libro:
+        flash("Ups, el libro no fue encontrado.", "danger")
+        return redirect(url_for('inicio_libros'))
+    
     en_favs = Favoritos.favorito_de(id)
+    usuario_lo_tiene = Favoritos.buscar_libro_usuario(id, session["id_usuario"])
     
-    if libro:
-        return render_template(
-            'libro_detalle.html',
-            libro=libro,
-            en_favs=en_favs
-        )
-    
-    flash("Ups, el libro no fue encontrado ᴖ̈", "danger")
-    return redirect(url_for('inicio_libros'))
+    return render_template(
+        'libro_detalle.html',
+        libro=libro,
+        en_favs=en_favs,
+        usuario_lo_tiene=usuario_lo_tiene
+    )
 
-@app.route("/libros/crear", methods=["POST"]) # CORRECCIÓN: Se corrigió el error de dedo "metodhs" por "methods".
+@app.route("/libros/nuevo")
+def nuevo_libro():
+    if "id_usuario" not in session:
+        flash("Debes iniciar sesión.", "danger")
+        return redirect(url_for("inicio"))
+    
+    return render_template(
+        'nuevo_libro.html',
+        autores=Autores.autores_lista(),
+        generos=Generos.generos_lista()
+    )
+
+@app.route("/libros/crear", methods=["POST"])
 def ingresar_libro():
     if "id_usuario" not in session:
         flash("Inicia sesión para poder ingresar el libro.", "danger")
         return redirect(url_for('inicio_libros'))
     
-    titulo = request.form.get("titulo", " ").strip() # CORRECCIÓN: Se agregaron los paréntesis () a .strip() para que realmente limpie el texto.
-    autor_id = request.form.get("autor_id", " ").strip()
-    genero = request.form.get("genero", " ").strip()
-    descripcion = request.form.get("descripcion", " ").strip()
+    usuario = Usuarios.buscar_id(session["id_usuario"])
+    if not usuario:
+        session.clear()
+        flash("Tu sesión ya no es válida. Inicia sesión de nuevo.", "danger")
+        return redirect(url_for("inicio"))
     
     datos = {
-        "titulo" : titulo,
-        "autor_id" : autor_id,
-        "genero_id" : genero, # CORRECCIÓN: Se cambió la clave de "genero" a "genero_id" para que coincida con la base de datos y el modelo.
-        "descripcion" : descripcion,
-        "usuario_id" : session["id_usuario"] # CORRECCIÓN: Se agregó el id del usuario de la sesión para asociar el libro a su creador.
+        "titulo": request.form.get("titulo", "").strip(),
+        "autor_id": request.form.get("autor_id", "").strip(),
+        "genero_id": request.form.get("genero_id", "").strip(),
+        "descripcion": request.form.get("descripcion", "").strip(),
+        "usuario_id": session["id_usuario"]
     }
     
-    libro_nuevo = Libros.validar_libro(datos)
-    if not libro_nuevo:
-        return redirect(url_for('inicio_libros'))
+    if not Libros.validar_libro(datos):
+        return redirect(url_for('nuevo_libro'))
     
     Libros.guardar(datos)
-    flash("Libro guardado correctamente", "success")
+    flash("Libro guardado correctamente.", "success")
     return redirect(url_for('inicio_libros'))
+
+@app.route("/libros/editar/<int:id>")
+def editar_libro(id):
+    if "id_usuario" not in session:
+        flash("Debes iniciar sesión.", "danger")
+        return redirect(url_for('inicio_libros'))
+    
+    libro = Libros.buscar_id(id)
+    if not libro:
+        flash("Libro no encontrado.", "danger")
+        return redirect(url_for('inicio_libros'))
+    
+    if libro.usuario_id != session["id_usuario"]:
+        flash("No puedes modificar este libro.", "danger")
+        return redirect(url_for('inicio_libros'))
+    
+    return render_template(
+        'editar_libro.html',
+        libro=libro,
+        autores=Autores.autores_lista(),
+        generos=Generos.generos_lista()
+    )
 
 @app.route("/libros/modificar/<int:id>", methods=["POST"])
 def modificar_libro(id):
     if "id_usuario" not in session:
-        flash("Inicia sesión para poder eliminar el libro.", "danger")
+        flash("Inicia sesión para poder modificar el libro.", "danger")
         return redirect(url_for('inicio_libros'))
-    
-    titulo = request.form.get("titulo", " ").strip() # CORRECCIÓN: Se agregaron los paréntesis () a .strip().
-    autor_id = request.form.get("autor_id", " ").strip()
-    genero = request.form.get("genero", " ").strip()
-    descripcion = request.form.get("descripcion", " ").strip()
-        
-    datos = {
-        "id_libro" : id, # CORRECCIÓN: Se añadió el id del libro para que el UPDATE sepa cuál modificar.
-        "titulo" : titulo,
-        "autor_id" : autor_id,
-        "genero_id" : genero, # CORRECCIÓN: Se ajustó a "genero_id" por consistencia con el modelo.
-        "descripcion" : descripcion
-    }
     
     libro = Libros.buscar_id(id)
     if not libro:
         flash("Ups, parece que el libro no existe...", "danger")
         return redirect(url_for('inicio_libros'))
-
+    
     if libro.usuario_id != session["id_usuario"]:
-        flash("No puedes eliminar este libro.", "danger")
+        flash("No puedes modificar este libro.", "danger")
         return redirect(url_for('inicio_libros'))
     
-    libro_modificado = Libros.validar_libro(datos)
-    if not libro_modificado:
-        return redirect(url_for('inicio_libros'))
+    datos = {
+        "id_libro": id,
+        "titulo": request.form.get("titulo", "").strip(),
+        "autor_id": request.form.get("autor_id", "").strip(),
+        "genero_id": request.form.get("genero_id", "").strip(),
+        "descripcion": request.form.get("descripcion", "").strip()
+    }
+    
+    if not Libros.validar_libro(datos):
+        return redirect(url_for('editar_libro', id=id))
     
     Libros.modificar(datos)
-    flash("Libro modificado correctamente!!", "success")
+    flash("Libro modificado correctamente.", "success")
     return redirect(url_for('inicio_libros'))
 
-@app.route("/libro/confirmar_eliminacion/<int:id>")
+@app.route("/libros/confirmar_eliminacion/<int:id>")
 def confirmar_eliminacion(id):
     if "id_usuario" not in session:
         flash("Inicia sesión para poder eliminar el libro.", "danger")
@@ -137,5 +170,5 @@ def eliminar_libro(id):
         return redirect(url_for('inicio_libros'))
     
     Libros.eliminar(id)
-    flash("Libro eliminado correctamente!!", "success")
+    flash("Libro eliminado correctamente.", "success")
     return redirect(url_for('inicio_libros'))

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}BookHub - {{ libro.titulo }}{% endblock %}
+
+{% block content %}
+
+<h2 class="book-title">{{ libro.titulo }}</h2>
+
+<div class="book-detail">
+    <div class="book-cover">Portada<br>(sin imagen)</div>
+
+    <div class="book-info">
+        <p><strong>Autor:</strong> {{ libro.autor_nombre|default(libro.autor_id) }}</p>
+        <p><strong>Género:</strong> {{ libro.genero_nombre|default(libro.genero_id) }}</p>
+        <p><strong>Publicado por:</strong> {{ libro.usuario_nombre }} {{ libro.usuario_apellido }}</p>
+        <p><strong>Fecha:</strong> {{ libro.created_at.strftime('%Y-%m-%d') }}</p>
+
+        {% if usuario_lo_tiene %}
+        <a href="{{ url_for('eliminar_favorito', libro_id=libro.id_libro) }}" class="btn btn-danger mt-2">
+            Quitar de Favoritos
+        </a>
+        {% else %}
+        <a href="{{ url_for('agregar_favorito', id=libro.id_libro) }}" class="btn btn-dark mt-2">
+            ❤︎ Agregar a Favoritos
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-4">
+    <h4>Descripción</h4>
+    <p>{{ libro.descripcion }}</p>
+</div>
+
+<div class="mt-5">
+    <h4>Usuarios que lo tienen en favoritos ({{ en_favs|length }})</h4>
+    {% if en_favs %}
+    <ul class="fav-users-list">
+        {% for fav in en_favs %}
+        <li>{{ fav.nombre }} {{ fav.apellido }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted">Todavía nadie lo ha agregado a favoritos.</p>
+    {% endif %}
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('inicio_libros') }}" class="btn btn-secondary">← Volver a Mis Libros</a>
+</div>
+
+{% endblock %}

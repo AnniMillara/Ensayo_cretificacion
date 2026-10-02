@@ -1,38 +1,34 @@
 {% extends "base.html" %}
 
-{% block title %}BookHub - Mis Favoritos{% endblock %}
+{% block title %}BookHub - {{ autor.nombre }} {{ autor.apellido }}{% endblock %}
 
 {% block content %}
 
 <div class="page-header">
     <div>
-        <h2>Mis Libros Favoritos</h2>
-        <p>Lista de todos los libros que has agregado a favoritos.</p>
+        <h2>{{ autor.nombre }} {{ autor.apellido }}</h2>
+        <p>Libros de este autor en BookHub.</p>
     </div>
 </div>
 
-{% if libros_favs %}
+{% if libros_suyos %}
 <table class="table-bookhub">
     <thead>
         <tr>
             <th>Título</th>
-            <th>Autor</th>
             <th>Género</th>
             <th>Fecha</th>
             <th>Acción</th>
         </tr>
     </thead>
     <tbody>
-        {% for libro in libros_favs %}
+        {% for libro in libros_suyos %}
         <tr>
             <td><a href="{{ url_for('detalle_libro', id=libro.id_libro) }}">{{ libro.titulo }}</a></td>
-            <td>{{ libro.autor_nombre|default(libro.autor_id) }}</td>
             <td>{{ libro.genero_nombre|default(libro.genero_id) }}</td>
             <td>{{ libro.created_at.strftime('%Y-%m-%d') }}</td>
             <td>
-                <a href="{{ url_for('eliminar_favorito', libro_id=libro.id_libro) }}" class="btn btn-sm btn-danger">
-                    Quitar de Favoritos
-                </a>
+                <a href="{{ url_for('detalle_libro', id=libro.id_libro) }}" class="btn btn-sm btn-info">Ver</a>
             </td>
         </tr>
         {% endfor %}
@@ -40,9 +36,12 @@
 </table>
 {% else %}
 <div class="card-bookhub text-center">
-    <p class="text-muted">Aún no tienes libros en favoritos.</p>
-    <a href="{{ url_for('inicio_libros') }}" class="btn btn-dark">Explorar libros</a>
+    <p class="text-muted">Este autor todavía no tiene libros registrados.</p>
 </div>
 {% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('autores') }}" class="btn btn-secondary">← Volver a Autores</a>
+</div>
 
 {% endblock %}

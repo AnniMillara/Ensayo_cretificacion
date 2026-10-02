@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}BookHub - Mis Libros{% endblock %}
+
+{% block content %}
+
+<!-- ================= MIS LIBROS ================= -->
+<div class="page-header">
+    <div>
+        <h2>Mis Libros</h2>
+        <p>Los libros que has compartido con la comunidad.</p>
+    </div>
+    <a href="{{ url_for('nuevo_libro') }}" class="btn btn-primary">+ Nuevo Libro</a>
+</div>
+
+<table class="table-bookhub">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Autor</th>
+            <th>Género</th>
+            <th>Fecha</th>
+            <th>Favoritos</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for libro in libros %}
+        {% if libro.usuario_id == session.get('id_usuario') %}
+        <tr>
+            <td><a href="{{ url_for('detalle_libro', id=libro.id_libro) }}">{{ libro.titulo }}</a></td>
+            <td>{{ libro.autor_nombre|default(libro.autor_id) }}</td>
+            <td>{{ libro.genero_nombre|default(libro.genero_id) }}</td>
+            <td>{{ libro.created_at.strftime('%Y-%m-%d') }}</td>
+            <td>{{ libro.total_favs|default(0) }}</td>
+            <td>
+                <a href="{{ url_for('detalle_libro', id=libro.id_libro) }}" class="btn btn-sm btn-info">Ver</a>
+                <a href="{{ url_for('editar_libro', id=libro.id_libro) }}" class="btn btn-sm btn-warning">Editar</a>
+                <a href="{{ url_for('confirmar_eliminacion', id=libro.id_libro) }}" class="btn btn-sm btn-danger">Borrar</a>
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr class="section-divider">
+
+<!-- ================= COMUNIDAD ================= -->
+<div class="page-header">
+    <div>
+        <h2>Libros de la Comunidad</h2>
+        <p>Descubre lo que otros lectores están compartiendo.</p>
+    </div>
+</div>
+
+<table class="table-bookhub">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Autor</th>
+            <th>Género</th>
+            <th>Publicado por</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for libro in libros %}
+        {% if libro.usuario_id != session.get('id_usuario') %}
+        <tr>
+            <td><a href="{{ url_for('detalle_libro', id=libro.id_libro) }}">{{ libro.titulo }}</a></td>
+            <td>{{ libro.autor_nombre|default(libro.autor_id) }}</td>
+            <td>{{ libro.genero_nombre|default(libro.genero_id) }}</td>
+            <td>{{ libro.usuario_nombre }} {{ libro.usuario_apellido }}</td>
+            <td>{{ libro.created_at.strftime('%Y-%m-%d') }}</td>
+            <td>
+                <a href="{{ url_for('detalle_libro', id=libro.id_libro) }}" class="btn btn-sm btn-info">Ver</a>
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

@@ -9,6 +9,10 @@ class Libros:
         self.genero_id = data["genero_id"]
         self.descripcion = data["descripcion"]
         self.usuario_id = data["usuario_id"]
+        # Estos dos vienen del JOIN con usuarios. Pueden venir None si el
+        # SELECT no los trae, por eso el .get().
+        self.usuario_nombre = data.get("usuario_nombre")
+        self.usuario_apellido = data.get("usuario_apellido")
         self.created_at = data["created_at"]
         self.updated_at = data["updated_at"]
     
@@ -16,16 +20,19 @@ class Libros:
     def ver_libros(cls):
         query = """
             SELECT 
-                id_libro,
-                titulo,
-                autor_id,
-                genero_id,
-                descripcion,
-                usuario_id,
-                created_at,
-                updated_at
+                libros.id_libro,
+                libros.titulo,
+                libros.autor_id,
+                libros.genero_id,
+                libros.descripcion,
+                libros.usuario_id,
+                libros.created_at,
+                libros.updated_at,
+                usuarios.nombre AS usuario_nombre,
+                usuarios.apellido AS usuario_apellido
             FROM libros
-            ORDER BY id_libro;
+            JOIN usuarios ON libros.usuario_id = usuarios.id_usuario
+            ORDER BY libros.id_libro;
         """
         
         resultados = connectToMySQL('esquema_biblioteca').query_db(query)
@@ -40,16 +47,19 @@ class Libros:
     def buscar_id(cls, id):
         query = """
             SELECT 
-                id_libro,
-                titulo,
-                autor_id,
-                genero_id,
-                descripcion,
-                usuario_id,
-                created_at,
-                updated_at
+                libros.id_libro,
+                libros.titulo,
+                libros.autor_id,
+                libros.genero_id,
+                libros.descripcion,
+                libros.usuario_id,
+                libros.created_at,
+                libros.updated_at,
+                usuarios.nombre AS usuario_nombre,
+                usuarios.apellido AS usuario_apellido
             FROM libros
-            WHERE id_libro = %(id_libro)s;
+            JOIN usuarios ON libros.usuario_id = usuarios.id_usuario
+            WHERE libros.id_libro = %(id_libro)s;
         """
         
         data = {
@@ -114,16 +124,19 @@ class Libros:
     def buscar_autor(cls, autor):
         query = """
             SELECT 
-                id_libro,
-                titulo,
-                autor_id,
-                genero_id,
-                descripcion,
-                usuario_id,
-                created_at,
-                updated_at
+                libros.id_libro,
+                libros.titulo,
+                libros.autor_id,
+                libros.genero_id,
+                libros.descripcion,
+                libros.usuario_id,
+                libros.created_at,
+                libros.updated_at,
+                usuarios.nombre AS usuario_nombre,
+                usuarios.apellido AS usuario_apellido
             FROM libros
-            WHERE autor_id = %(autor_id)s;
+            JOIN usuarios ON libros.usuario_id = usuarios.id_usuario
+            WHERE libros.autor_id = %(autor_id)s;
         """
         data = {
             "autor_id": autor
@@ -131,27 +144,28 @@ class Libros:
         
         libros = []
         resultados = connectToMySQL('esquema_biblioteca').query_db(query, data)
-        if resultados:
-            for libro in resultados:
-                libros.append(cls(libro))
-            return libros
+        for libro in resultados:
+            libros.append(cls(libro))
         
-        return None
+        return libros
 
     @classmethod
     def buscar_genero(cls, genero):
         query = """
             SELECT 
-                id_libro,
-                titulo,
-                autor_id,
-                genero_id,
-                descripcion,
-                usuario_id,
-                created_at,
-                updated_at
+                libros.id_libro,
+                libros.titulo,
+                libros.autor_id,
+                libros.genero_id,
+                libros.descripcion,
+                libros.usuario_id,
+                libros.created_at,
+                libros.updated_at,
+                usuarios.nombre AS usuario_nombre,
+                usuarios.apellido AS usuario_apellido
             FROM libros
-            WHERE genero_id = %(genero_id)s;
+            JOIN usuarios ON libros.usuario_id = usuarios.id_usuario
+            WHERE libros.genero_id = %(genero_id)s;
         """
         data = {
             "genero_id": genero
