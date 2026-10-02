@@ -9,8 +9,12 @@ class Libros:
         self.genero_id = data["genero_id"]
         self.descripcion = data["descripcion"]
         self.usuario_id = data["usuario_id"]
-        # Estos dos vienen del JOIN con usuarios. Pueden venir None si el
-        # SELECT no los trae, por eso el .get().
+        # Datos del JOIN con autores
+        self.autor_nombre = data.get("autor_nombre")
+        self.autor_apellido = data.get("autor_apellido")
+        # Datos del JOIN con generos
+        self.genero_nombre = data.get("genero_nombre")
+        # Datos del JOIN con usuarios
         self.usuario_nombre = data.get("usuario_nombre")
         self.usuario_apellido = data.get("usuario_apellido")
         self.created_at = data["created_at"]
@@ -28,9 +32,14 @@ class Libros:
                 libros.usuario_id,
                 libros.created_at,
                 libros.updated_at,
+                autores.nombre AS autor_nombre,
+                autores.apellido AS autor_apellido,
+                generos.nombre AS genero_nombre,
                 usuarios.nombre AS usuario_nombre,
                 usuarios.apellido AS usuario_apellido
             FROM libros
+            JOIN autores ON libros.autor_id = autores.id_autor
+            JOIN generos ON libros.genero_id = generos.id_genero
             JOIN usuarios ON libros.usuario_id = usuarios.id_usuario
             ORDER BY libros.id_libro;
         """
@@ -55,9 +64,14 @@ class Libros:
                 libros.usuario_id,
                 libros.created_at,
                 libros.updated_at,
+                autores.nombre AS autor_nombre,
+                autores.apellido AS autor_apellido,
+                generos.nombre AS genero_nombre,
                 usuarios.nombre AS usuario_nombre,
                 usuarios.apellido AS usuario_apellido
             FROM libros
+            JOIN autores ON libros.autor_id = autores.id_autor
+            JOIN generos ON libros.genero_id = generos.id_genero
             JOIN usuarios ON libros.usuario_id = usuarios.id_usuario
             WHERE libros.id_libro = %(id_libro)s;
         """
@@ -132,9 +146,14 @@ class Libros:
                 libros.usuario_id,
                 libros.created_at,
                 libros.updated_at,
+                autores.nombre AS autor_nombre,
+                autores.apellido AS autor_apellido,
+                generos.nombre AS genero_nombre,
                 usuarios.nombre AS usuario_nombre,
                 usuarios.apellido AS usuario_apellido
             FROM libros
+            JOIN autores ON libros.autor_id = autores.id_autor
+            JOIN generos ON libros.genero_id = generos.id_genero
             JOIN usuarios ON libros.usuario_id = usuarios.id_usuario
             WHERE libros.autor_id = %(autor_id)s;
         """
@@ -161,9 +180,14 @@ class Libros:
                 libros.usuario_id,
                 libros.created_at,
                 libros.updated_at,
+                autores.nombre AS autor_nombre,
+                autores.apellido AS autor_apellido,
+                generos.nombre AS genero_nombre,
                 usuarios.nombre AS usuario_nombre,
                 usuarios.apellido AS usuario_apellido
             FROM libros
+            JOIN autores ON libros.autor_id = autores.id_autor
+            JOIN generos ON libros.genero_id = generos.id_genero
             JOIN usuarios ON libros.usuario_id = usuarios.id_usuario
             WHERE libros.genero_id = %(genero_id)s;
         """

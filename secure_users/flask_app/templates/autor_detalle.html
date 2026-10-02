@@ -25,7 +25,7 @@
         {% for libro in libros_suyos %}
         <tr>
             <td><a href="{{ url_for('detalle_libro', id=libro.id_libro) }}">{{ libro.titulo }}</a></td>
-            <td>{{ libro.genero_nombre|default(libro.genero_id) }}</td>
+            <td>{{ libro.genero_nombre }}</td>
             <td>{{ libro.created_at.strftime('%Y-%m-%d') }}</td>
             <td>
                 <a href="{{ url_for('detalle_libro', id=libro.id_libro) }}" class="btn btn-sm btn-info">Ver</a>

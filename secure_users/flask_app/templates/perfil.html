@@ -24,6 +24,8 @@
     <thead>
         <tr>
             <th>Título</th>
+            <th>Autor</th>
+            <th>Género</th>
             <th>Fecha</th>
             <th>Acción</th>
         </tr>
@@ -34,6 +36,8 @@
             <td>
                 <a href="{{ url_for('detalle_libro', id=fav.id_libro) }}">{{ fav.titulo }}</a>
             </td>
+            <td>{{ fav.autor_nombre }} {{ fav.autor_apellido }}</td>
+            <td>{{ fav.genero_nombre }}</td>
             <td>{{ fav.created_at.strftime('%Y-%m-%d') }}</td>
             <td>
                 <a href="{{ url_for('eliminar_favorito', libro_id=fav.id_libro) }}" class="btn btn-sm btn-danger">

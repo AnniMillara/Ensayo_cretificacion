@@ -4,7 +4,6 @@
 
 {% block content %}
 
-<!-- ================= MIS LIBROS ================= -->
 <div class="page-header">
     <div>
         <h2>Mis Libros</h2>
@@ -29,8 +28,8 @@
         {% if libro.usuario_id == session.get('id_usuario') %}
         <tr>
             <td><a href="{{ url_for('detalle_libro', id=libro.id_libro) }}">{{ libro.titulo }}</a></td>
-            <td>{{ libro.autor_nombre|default(libro.autor_id) }}</td>
-            <td>{{ libro.genero_nombre|default(libro.genero_id) }}</td>
+            <td>{{ libro.autor_nombre }} {{ libro.autor_apellido }}</td>
+            <td>{{ libro.genero_nombre }}</td>
             <td>{{ libro.created_at.strftime('%Y-%m-%d') }}</td>
             <td>{{ libro.total_favs|default(0) }}</td>
             <td>
@@ -46,7 +45,6 @@
 
 <hr class="section-divider">
 
-<!-- ================= COMUNIDAD ================= -->
 <div class="page-header">
     <div>
         <h2>Libros de la Comunidad</h2>
@@ -70,8 +68,8 @@
         {% if libro.usuario_id != session.get('id_usuario') %}
         <tr>
             <td><a href="{{ url_for('detalle_libro', id=libro.id_libro) }}">{{ libro.titulo }}</a></td>
-            <td>{{ libro.autor_nombre|default(libro.autor_id) }}</td>
-            <td>{{ libro.genero_nombre|default(libro.genero_id) }}</td>
+            <td>{{ libro.autor_nombre }} {{ libro.autor_apellido }}</td>
+            <td>{{ libro.genero_nombre }}</td>
             <td>{{ libro.usuario_nombre }} {{ libro.usuario_apellido }}</td>
             <td>{{ libro.created_at.strftime('%Y-%m-%d') }}</td>
             <td>

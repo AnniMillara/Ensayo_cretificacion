@@ -10,8 +10,8 @@
     <div class="book-cover">Portada<br>(sin imagen)</div>
 
     <div class="book-info">
-        <p><strong>Autor:</strong> {{ libro.autor_nombre|default(libro.autor_id) }}</p>
-        <p><strong>Género:</strong> {{ libro.genero_nombre|default(libro.genero_id) }}</p>
+        <p><strong>Autor:</strong> {{ libro.autor_nombre }} {{ libro.autor_apellido }}</p>
+        <p><strong>Género:</strong> {{ libro.genero_nombre }}</p>
         <p><strong>Publicado por:</strong> {{ libro.usuario_nombre }} {{ libro.usuario_apellido }}</p>
         <p><strong>Fecha:</strong> {{ libro.created_at.strftime('%Y-%m-%d') }}</p>
 
@@ -21,7 +21,7 @@
         </a>
         {% else %}
         <a href="{{ url_for('agregar_favorito', id=libro.id_libro) }}" class="btn btn-dark mt-2">
-            ❤︎ Agregar a Favoritos
+            ❤️ Agregar a Favoritos
         </a>
         {% endif %}
     </div>

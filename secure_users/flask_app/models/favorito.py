@@ -36,8 +36,6 @@ class Favoritos:
     
     @classmethod
     def libros_favoritos(cls, usuario_id):
-        # Devuelve objetos Libros (con título) de los favoritos del usuario.
-        # Se necesita JOIN para traer los datos del libro, no solo el id.
         from flask_app.models.libro import Libros
         
         query = """
@@ -49,9 +47,17 @@ class Favoritos:
                 libros.descripcion,
                 libros.usuario_id,
                 libros.created_at,
-                libros.updated_at
+                libros.updated_at,
+                autores.nombre AS autor_nombre,
+                autores.apellido AS autor_apellido,
+                generos.nombre AS genero_nombre,
+                usuarios.nombre AS usuario_nombre,
+                usuarios.apellido AS usuario_apellido
             FROM favoritos
             JOIN libros ON favoritos.libro_id = libros.id_libro
+            JOIN autores ON libros.autor_id = autores.id_autor
+            JOIN generos ON libros.genero_id = generos.id_genero
+            JOIN usuarios ON libros.usuario_id = usuarios.id_usuario
             WHERE favoritos.usuario_id = %(usuario_id)s
             ORDER BY favoritos.id;
         """
