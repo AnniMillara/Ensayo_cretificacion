@@ -1,6 +1,5 @@
 import pymysql.cursors
 
-
 class MySQLConnection:
     """
     Administra la conexión entre Python y MySQL.
@@ -13,7 +12,7 @@ class MySQLConnection:
         connection = pymysql.connect(
             host="localhost",
             user="root",
-            password="root",
+            password="1234",
             database=self.db,
             charset="utf8mb4",
             cursorclass=pymysql.cursors.DictCursor,
